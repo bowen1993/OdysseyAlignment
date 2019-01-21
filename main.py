@@ -39,6 +39,24 @@ def runAlignments(languages):
         os.system('head -n %s odyssey.agr > odyssey_%s.agr' % (numOfLines, language))
         subprocess.call(['./run.sh', 'odyssey_%s.agr' % language, filename, '%sDict' % language])
 
+def getStepResults(language):
+    for i in range(1,11):
+        hmm = '%sDict.thmm.%d' % (language, i)
+        src_vcb = 'odyssey_%s.agr.vcb' % language
+        target_vcb = 'odyssey.%s.vcb' % language
+
+        #load vcb
+        srcVcb = loadVcbMap(open(src_vcb, 'r'))
+        trgVcb = loadVcbMap(open(target_vcb, 'r'))
+        with open('top20it%d.csv' % i, 'w') as f:
+            csv_writer = csv.writer(f)
+            csv_writer.writerow(['hmm'])
+            res = makeActualResult(open(hmm, 'r'), srcVcb, trgVcb)
+            for x in range(50):
+                csv_writer.writerow([res[x][0], res[x][1], res[x][2]])
+
+
+
 def generateJSONData(languages):
     csv_writer = csv.writer(open('top20s.csv', 'w'))
     for language in languages:
@@ -62,7 +80,7 @@ def generateJSONData(languages):
         #generate model1 table json
         csv_writer.writerow(['model1'])
         res = generateList(open(model1, 'r'))
-        for i in range(20):
+        for i in range(200):
             csv_writer.writerow([res[i][0], res[i][1], res[i][2]])
         resFile = open('./agr-%s-align.json' % language, 'w')
         json.dump(res, resFile, ensure_ascii=False)
@@ -70,7 +88,7 @@ def generateJSONData(languages):
         #generate model3 table json
         csv_writer.writerow(['model3'])
         res = makeActualResult(open(model3, 'r'), srcVcb, trgVcb)
-        for i in range(20):
+        for i in range(200):
             csv_writer.writerow([res[i][0], res[i][1], res[i][2]])
         model3ResFile = open('./agr-%s-m3-align.json' % language, 'w')
         json.dump(res, model3ResFile, ensure_ascii=False)
@@ -78,7 +96,7 @@ def generateJSONData(languages):
         #generate hmm table json
         csv_writer.writerow(['hmm'])
         res = makeActualResult(open(hmm, 'r'), srcVcb, trgVcb)
-        for i in range(100):
+        for i in range(200):
             csv_writer.writerow([res[i][0], res[i][1], res[i][2]])
         hmmResFile = open('./agr-%s-hmm-align.json' % language, 'w')
         json.dump(res, hmmResFile, ensure_ascii=False)
@@ -115,11 +133,12 @@ if __name__ == '__main__':
     if not targets or not languageCols or not checkLanguages(languageCols, targets):
         parser.print_help()
         exit(1)
-    print(bcolors.HEADER + '###############Generating Corpus Files###############'+ bcolors.ENDC)
-    generateAllCorpusFiles(languageCols, 'OdysseyAlign.csv')
-    print(bcolors.HEADER + '###############Running Alignments###############'+ bcolors.ENDC)
-    runAlignments(targets)
-    print(bcolors.HEADER + '###############Generating JSON Data###############' + bcolors.ENDC)
-    generateJSONData(targets)
+    # print(bcolors.HEADER + '###############Generating Corpus Files###############'+ bcolors.ENDC)
+    # generateAllCorpusFiles(languageCols, 'OdysseyAlign.csv')
+    # print(bcolors.HEADER + '###############Running Alignments###############'+ bcolors.ENDC)
+    # runAlignments(targets)
+    # print(bcolors.HEADER + '###############Generating JSON Data###############' + bcolors.ENDC)
+    # generateJSONData(targets)
+    # getStepResults('en')
     removeTmpFiles()
-    print(bcolors.BOLD + bcolors.OKGREEN + "Finish!" + bcolors.ENDC)
+    # print(bcolors.BOLD + bcolors.OKGREEN + "Finish!" + bcolors.ENDC)
