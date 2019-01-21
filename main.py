@@ -1,10 +1,11 @@
 import csv
+import sys
 import json
 from generateHomerCorpus import generateCorpusFile
 from jsonifyResults import *
 import subprocess
 import os
-
+import argparse
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -21,11 +22,20 @@ def generateAllCorpusFiles(languages, csvFilename):
             csv_reader = csv.reader(csvFile)
             generateCorpusFile(language, col, csv_reader)
 
+def getFileNumOfLines(filename):
+    p = subprocess.Popen(['wc', '-l', filename], stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE)
+    result, err = p.communicate()
+    if p.returncode != 0:
+        print('File %s broken' % filename)
+        exit(1)
+    return int(result.strip().split()[0])
+
 def runAlignments(languages):
     for language in languages:
-        print( bcolors.OKBLUE + 'Aligning %s' % language + bcolors.ENDC)
         filename = 'odyssey.%s' % language
-        numOfLines = subprocess.check_output(['wc', '-l', filename]).strip().split()[0]
+        numOfLines = getFileNumOfLines(filename)
+        print(numOfLines)
         os.system('head -n %s odyssey.agr > odyssey_%s.agr' % (numOfLines, language))
         subprocess.call(['./run.sh', 'odyssey_%s.agr' % language, filename, '%sDict' % language])
 
@@ -47,7 +57,7 @@ def generateJSONData(languages):
         #generate aligned corpus in JSON
         corpus = generateAlignCorpus(open('odyssey_%s.agr' % language, 'r'), open('odyssey.%s' % language, 'r'))
         corpusFile = open('agr-%s.json' % language, 'w')
-        json.dump(corpus, corpusFile, ensure_ascii=False, encoding='utf-8')
+        json.dump(corpus, corpusFile, ensure_ascii=False)
 
         #generate model1 table json
         csv_writer.writerow(['model1'])
@@ -55,7 +65,7 @@ def generateJSONData(languages):
         for i in range(20):
             csv_writer.writerow([res[i][0], res[i][1], res[i][2]])
         resFile = open('./agr-%s-align.json' % language, 'w')
-        json.dump(res, resFile, ensure_ascii=False, encoding='utf-8')
+        json.dump(res, resFile, ensure_ascii=False)
 
         #generate model3 table json
         csv_writer.writerow(['model3'])
@@ -63,7 +73,7 @@ def generateJSONData(languages):
         for i in range(20):
             csv_writer.writerow([res[i][0], res[i][1], res[i][2]])
         model3ResFile = open('./agr-%s-m3-align.json' % language, 'w')
-        json.dump(res, model3ResFile, ensure_ascii=False, encoding='utf-8')
+        json.dump(res, model3ResFile, ensure_ascii=False)
 
         #generate hmm table json
         csv_writer.writerow(['hmm'])
@@ -71,20 +81,48 @@ def generateJSONData(languages):
         for i in range(100):
             csv_writer.writerow([res[i][0], res[i][1], res[i][2]])
         hmmResFile = open('./agr-%s-hmm-align.json' % language, 'w')
-        json.dump(res, hmmResFile, ensure_ascii=False, encoding='utf-8')
+        json.dump(res, hmmResFile, ensure_ascii=False)
 
 def removeTmpFiles():
     os.system('rm odyssey*')
     os.system('rm *Dict*')
 
+def parseLanguageColumn(configFilename):
+    if not os.path.exists(configFilename):
+        return None
+    configFile = open(configFilename, 'r')
+    csv_reader = csv.reader(configFile)
+    return [(row[0], int(row[1])) for row in csv_reader]
+
+def checkLanguages(languageCols, source, targets):
+    languages = [x for x in zip(*languageCols)][0]
+    for target in targets:
+        if target not in languages:
+            return False
+    return source in languages
+
 if __name__ == '__main__':
-    allLanguages = [('ch', 6), ('en', 4), ('fr', 8), ('gr', 3), ('it', 5), ('sp', 7), ('agr', 2), ('pe', 9)]
-    targetLanguages = ['ch', 'gr', 'fr', 'it', 'sp', 'en', 'pe']
-    print(bcolors.HEADER + '###############Generating Corpus Files###############' + bcolors.ENDC)
-    generateAllCorpusFiles(allLanguages, 'OdysseyAlign.csv')
-    print(bcolors.HEADER + '###############Running Alignments###############' + bcolors.ENDC)
-    runAlignments(targetLanguages)
+    parser = argparse.ArgumentParser(description='Odyssey Aligner', prog='main.py')
+    parser.add_argument('--filename', help="Alignment CSV file")
+    parser.add_argument('--config', help="config filename")
+    parser.add_argument('--targets', nargs="+", help="target languages")
+    parser.add_argument('--src', help="source language")
+    args = parser.parse_args()
+    if not args.config:
+        parser.print_help()
+        exit(1)
+    languageCols = parseLanguageColumn(args.config)
+    targets = args.targets
+    source = args.src
+    if not source or not targets or not languageCols or not checkLanguages(languageCols, source, targets):
+        parser.print_help()
+        exit(1)
+    print(languageCols,targets,source )
+    print(bcolors.HEADER + '###############Generating Corpus Files###############'+ bcolors.ENDC)
+    generateAllCorpusFiles(languageCols, 'OdysseyAlign.csv')
+    print(bcolors.HEADER + '###############Running Alignments###############'+ bcolors.ENDC)
+    runAlignments(targets)
     print(bcolors.HEADER + '###############Generating JSON Data###############' + bcolors.ENDC)
-    generateJSONData(targetLanguages)
+    generateJSONData(targets)
     removeTmpFiles()
     print(bcolors.BOLD + bcolors.OKGREEN + "Finish!" + bcolors.ENDC)

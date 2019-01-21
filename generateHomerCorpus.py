@@ -9,8 +9,6 @@ jieba.load_userdict('./ch_dict.txt')
 def generateCorpusFile(languageCode, col, csv_reader):
     res_file = open('odyssey.%s' % languageCode, 'w')
     for index, row in enumerate(csv_reader):
-        if index == 0:
-            continue
         if len(row) <= col:
             continue
         line = row[col].strip(' \n')
