@@ -94,30 +94,27 @@ def parseLanguageColumn(configFilename):
     csv_reader = csv.reader(configFile)
     return [(row[0], int(row[1])) for row in csv_reader]
 
-def checkLanguages(languageCols, source, targets):
+def checkLanguages(languageCols, targets):
     languages = [x for x in zip(*languageCols)][0]
     for target in targets:
         if target not in languages:
             return False
-    return source in languages
+    return True
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Odyssey Aligner', prog='main.py')
     parser.add_argument('--filename', help="Alignment CSV file")
     parser.add_argument('--config', help="config filename")
     parser.add_argument('--targets', nargs="+", help="target languages")
-    parser.add_argument('--src', help="source language")
     args = parser.parse_args()
     if not args.config:
         parser.print_help()
         exit(1)
     languageCols = parseLanguageColumn(args.config)
     targets = args.targets
-    source = args.src
-    if not source or not targets or not languageCols or not checkLanguages(languageCols, source, targets):
+    if not targets or not languageCols or not checkLanguages(languageCols, targets):
         parser.print_help()
         exit(1)
-    print(languageCols,targets,source )
     print(bcolors.HEADER + '###############Generating Corpus Files###############'+ bcolors.ENDC)
     generateAllCorpusFiles(languageCols, 'OdysseyAlign.csv')
     print(bcolors.HEADER + '###############Running Alignments###############'+ bcolors.ENDC)
