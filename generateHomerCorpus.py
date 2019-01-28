@@ -24,6 +24,7 @@ def generateCorpusFile(languageCode, col, csv_reader):
             l = jieba.cut(line.decode('utf8'))
             res_file.write(u" ".join(l).encode('utf8'))
         else:
+            line = re.sub(r'[\u2000-\u206F\u2E00-\u2E7F\\\'!"#$%&()*+,\-.\/:;<=>?@\[\]^_`{|}~]', '', line)
             res_file.write(line)
         res_file.write('\n')
     res_file.close()
