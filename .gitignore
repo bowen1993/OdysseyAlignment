@@ -126,3 +126,15 @@ dmypy.json
 
 # json result
 *.json
+
+*Dict.*
+
+*.vcb
+
+*.vcb.classes*
+
+*.snt
+
+*.agr
+
+*.en
