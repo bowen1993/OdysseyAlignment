@@ -83,4 +83,3 @@ def generateAlignCorpus(src, target):
 #         hmmResFile = open('./agr-%s-hmm-align.json' % language, 'w')
 #         json.dump(res, hmmResFile, ensure_ascii=False, encoding='utf-8')
 
-
