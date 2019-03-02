@@ -1,0 +1,40 @@
+Book 1-24:
+
+unlemmatized Ancient Greek:
+88526 16586
+
+Ancient Greek Lemma:
+88679 5717
+
+English:
+132701 6443
+
+Book1:
+
+Ancient Greek Unlemma:
+3180 1587
+
+Ancient Greek Lemma:
+770 394
+
+English:
+4819 1175
+
+Modern Greek:
+3559 1571
+
+Chinese:
+4035 1793
+
+Italian:
+3924 1650
+
+Spanish:
+4416 1518
+
+French:
+3901 1321
+
+Persian:
+4814 1429
+

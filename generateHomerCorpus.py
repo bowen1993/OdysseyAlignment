@@ -21,8 +21,9 @@ def generateCorpusFile(languageCode, col, csv_reader):
         if languageCode == 'ch':
             # tokenize chinese file
             line = line.replace(' ', '')
-            l = jieba.cut(line.decode('utf8'))
-            res_file.write(u" ".join(l).encode('utf8'))
+            line = re.sub(r"[\s+\.\!\/_,$%^*(+\"\']+|[+——！，。？、~@#￥%……&*（）：；《）《》“”()»〔〕-]+", "", line)
+            l = jieba.cut(line)
+            res_file.write(u" ".join(l))
         else:
             line = re.sub(r'[\u2000-\u206F\u2E00-\u2E7F\\\'!"#$%&()*+,\-.\/:;<=>?@\[\]^_`{|}~]', '', line)
             res_file.write(line)

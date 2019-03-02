@@ -5,7 +5,10 @@ def generateList(inputFile):
     res = []
     for line in inputFile.readlines():
         # line = line.decode('utf8')
-        t, s, p = line.strip(' \n').split()
+        try:
+            t, s, p = line.strip(' \n').split()
+        except:
+            continue
         res.append((s, t, p))
     res.sort(key=lambda x: float(x[2]), reverse=True)
     return res
