@@ -138,3 +138,6 @@ dmypy.json
 *.agr
 
 *.en
+
+.python_versions
+.DS_Store
